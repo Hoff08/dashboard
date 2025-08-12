@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | BC Ducorte</title>
+    <title>Dashboard | Linkile</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,23 +18,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600&display=swap" rel="stylesheet">
 
     <script>
-        // Configuração do Tailwind com a identidade visual combinada
+        // Configuração do Tailwind com a nova identidade visual
         tailwind.config = {
             theme: {
                 extend: {
-                    // Paleta de cores combinada para ambos os layouts
                     colors: {
-                        // Cores do Dashboard
-                        'background': '#F5F3EF',
-                        'text-primary': '#111827',
-                        'text-secondary': '#6B7280',
-                        // Cores do Agendamento
-                        'brand-yellow': '#D6A329',
+                        'background': '#F9F5F0', // Tom de bege claro do fundo
+                        'text-primary': '#212529', // Preto para texto principal
+                        'text-secondary': '#6c757d', // Cinza para texto secundário
+                        'accent': '#E87A5D',       // Laranja do botão
+                        'accent-hover': '#D9684A', // Laranja mais escuro para hover
+                        'card-bg': '#FFFFFF',      // Fundo dos cards
+                        'border-color': '#DEE2E6', // Cor da borda
+                        // Cores do Agendamento (mantendo consistência)
                         'brand-dark': '#202020',
                         'brand-gray-dark': '#2B2B2B',
                         'brand-gray-light': '#3C3C3C',
+                        'brand-yellow': '#E87A5D', // Usando o laranja como destaque
                     },
-                    // Fontes personalizadas
                     fontFamily: {
                         'sans': ['Inter', 'sans-serif'],
                         'serif': ['Lora', 'serif'],
@@ -73,8 +74,8 @@
         <!-- =================================== -->
         <aside class="w-64 bg-background p-8 flex-col hidden md:flex">
             <div class="mb-12">
-                 <h1 class="font-serif text-4xl font-semibold tracking-tighter text-text-primary">BC</h1>
-                 <p class="font-sans text-sm tracking-widest text-text-secondary -mt-1">DUCORTE</p>
+                 <h1 class="font-serif text-4xl font-semibold tracking-tighter text-text-primary">Linkile</h1>
+                 <p class="font-sans text-sm tracking-widest text-text-secondary -mt-1"></p>
             </div>
             <nav class="flex flex-col flex-grow space-y-2">
                 <a href="#" class="flex items-center p-3 text-text-primary font-bold bg-gray-200/60 rounded-lg">
@@ -102,12 +103,12 @@
             <!-- ========= PÁGINA 1: DASHBOARD ========= -->
             <div id="dashboard-view" class="p-6 md:p-12">
                 <div class="max-w-4xl mx-auto">
-                    <div class="bg-white p-6 rounded-lg border border-gray-200 mb-8">
+                    <div class="bg-card-bg p-6 rounded-lg border border-border-color mb-8">
                         <h2 class="font-serif text-lg font-semibold text-text-primary mb-1">Seu plano</h2>
                         <p class="text-text-secondary mb-4">Você ainda não assinou um plano. Contrate e aproveite os benefícios.</p>
-                        <a href="#" class="font-semibold text-text-primary hover:text-black group">Contrate um plano <i class="fa-solid fa-arrow-right text-xs ml-1 transition-transform group-hover:translate-x-1"></i></a>
+                        <a href="#" class="font-semibold text-accent hover:text-accent-hover group">Contrate um plano <i class="fa-solid fa-arrow-right text-xs ml-1 transition-transform group-hover:translate-x-1"></i></a>
                     </div>
-                    <div class="bg-black text-white p-6 rounded-lg flex justify-between items-center mb-12">
+                    <div class="bg-brand-dark text-white p-6 rounded-lg flex justify-between items-center mb-12">
                         <div>
                             <h3 class="font-serif text-lg font-semibold">Conheça o Clube do assinante</h3>
                             <p class="text-gray-300 text-sm">e pague seu cupom com vantagens</p>
@@ -124,12 +125,10 @@
                     
                     <!-- Botão de novo agendamento -->
                     <div class="text-center mt-6">
-                        <button id="show-booking-button" class="bg-black text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-800 transition-colors">
+                        <button id="show-booking-button" class="bg-accent text-white font-semibold py-3 px-6 rounded-lg hover:bg-accent-hover transition-colors">
                             <i class="fa-solid fa-plus mr-2"></i>Novo agendamento
                         </button>
                     </div>
-                </div>
-            </div>
                 </div>
             </div>
 
@@ -189,120 +188,10 @@
     <!--          JAVASCRIPT (LÓGICA)        -->
     <!-- =================================== -->
     <script>
-        // Sistema de Autenticação com Backend Real
-        class AuthManager {
-            constructor() {
-                this.apiUrl = 'http://localhost:3000/api';
-                this.currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-                this.accessToken = localStorage.getItem('accessToken') || null;
-                this.refreshToken = localStorage.getItem('refreshToken') || null;
-            }
-
-            async apiRequest(endpoint, options = {}) {
-                const url = `${this.apiUrl}${endpoint}`;
-                const config = {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...options.headers
-                    },
-                    ...options
-                };
-
-                if (this.accessToken) {
-                    config.headers.Authorization = `Bearer ${this.accessToken}`;
-                }
-
-                try {
-                    const response = await fetch(url, config);
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Erro na requisição');
-                    }
-
-                    return data;
-                } catch (error) {
-                    console.error('Erro na API:', error);
-                    throw error;
-                }
-            }
-
-            async logout() {
-                try {
-                    if (this.refreshToken) {
-                        await this.apiRequest('/auth/logout', {
-                            method: 'POST',
-                            body: JSON.stringify({ refreshToken: this.refreshToken })
-                        });
-                    }
-                } catch (error) {
-                    console.error('Erro no logout:', error);
-                } finally {
-                    this.clearTokens();
-                    this.setCurrentUser(null);
-                }
-            }
-
-            async addAppointment(appointment) {
-                try {
-                    const response = await this.apiRequest('/appointments', {
-                        method: 'POST',
-                        body: JSON.stringify(appointment)
-                    });
-                    return response.appointment;
-                } catch (error) {
-                    throw new Error(error.message);
-                }
-            }
-
-            async getAppointments() {
-                try {
-                    const response = await this.apiRequest('/appointments');
-                    return response.appointments;
-                } catch (error) {
-                    throw new Error(error.message);
-                }
-            }
-
-            clearTokens() {
-                this.accessToken = null;
-                this.refreshToken = null;
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-            }
-
-            setCurrentUser(user) {
-                this.currentUser = user;
-                if (user) {
-                    localStorage.setItem('currentUser', JSON.stringify(user));
-                } else {
-                    localStorage.removeItem('currentUser');
-                }
-            }
-
-            getCurrentUser() {
-                return this.currentUser;
-            }
-
-            isAuthenticated() {
-                return !!this.accessToken && !!this.currentUser;
-            }
-        }
+        // A lógica de autenticação foi removida para "desbloquear" o dashboard.
+        // O restante do JavaScript permanece para a funcionalidade da página.
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const authManager = new AuthManager();
-            const currentUser = authManager.getCurrentUser();
-
-            // Verificar se o usuário está logado
-            if (!authManager.isAuthenticated()) {
-                alert('Você precisa estar logado para acessar o dashboard.');
-                window.location.href = 'login pagina.html';
-                return;
-            }
-
-            // Atualizar informações do usuário na interface
-            updateUserInfo(currentUser);
-
             // --- LÓGICA DE TRANSIÇÃO DE PÁGINA ---
             const dashboardView = document.getElementById('dashboard-view');
             const bookingView = document.getElementById('booking-view');
@@ -403,29 +292,13 @@
             });
 
             ui.buttons.confirm.addEventListener('click', async () => {
-                try {
-                    // Salvar agendamento no sistema
-                    const appointment = {
-                        branch: userSelections.branch,
-                        professional: userSelections.professional,
-                        service: userSelections.service,
-                        datetime: userSelections.datetime
-                    };
-
-                    await authManager.addAppointment(appointment);
-
-                    ui.summaryView.classList.add('hidden');
-                    document.getElementById('progress-header').classList.add('hidden');
-                    ui.successSummary.textContent = `Seu agendamento de ${userSelections.service} com ${userSelections.professional} para ${userSelections.datetime} na filial ${userSelections.branch} está confirmado.`;
-                    ui.successScreen.classList.remove('hidden');
-
-                    // Atualizar lista de agendamentos no dashboard
-                    setTimeout(() => {
-                        updateAppointmentsList();
-                    }, 1000);
-                } catch (error) {
-                    alert('Erro ao criar agendamento: ' + error.message);
-                }
+                ui.summaryView.classList.add('hidden');
+                document.getElementById('progress-header').classList.add('hidden');
+                ui.successSummary.textContent = `Seu agendamento de ${userSelections.service} com ${userSelections.professional} para ${userSelections.datetime} na filial ${userSelections.branch} está confirmado.`;
+                ui.successScreen.classList.remove('hidden');
+                
+                // Simula a adição à lista de agendamentos
+                addAppointmentToList(userSelections);
             });
 
             ui.buttons.restart.addEventListener('click', () => {
@@ -439,85 +312,51 @@
 
             ui.datePicker.setAttribute('min', new Date().toISOString().split('T')[0]);
             updateUIState();
+            
+            function addAppointmentToList(appointment) {
+                const appointmentsContainer = document.querySelector('.appointments-list');
+                const noAppointmentsMessage = appointmentsContainer.querySelector('.text-center');
+                if (noAppointmentsMessage) {
+                    noAppointmentsMessage.remove();
+                }
 
-            // Função para atualizar informações do usuário
-            function updateUserInfo(user) {
-                // Adicionar nome do usuário no dashboard se houver um elemento para isso
-                const userNameElements = document.querySelectorAll('.user-name');
-                userNameElements.forEach(el => {
-                    el.textContent = user.name;
-                });
+                const newAppointmentHTML = `
+                    <div class="bg-white border border-border-color rounded-lg p-4 mb-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold text-text-primary">${appointment.service}</h3>
+                                <p class="text-text-secondary text-sm">${appointment.professional}</p>
+                                <p class="text-text-secondary text-sm">${appointment.branch}</p>
+                                <p class="text-text-secondary text-sm">${appointment.datetime}</p>
+                            </div>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                Confirmado
+                            </span>
+                        </div>
+                    </div>
+                `;
+                appointmentsContainer.insertAdjacentHTML('beforeend', newAppointmentHTML);
             }
 
-            // Função para atualizar lista de agendamentos
-            async function updateAppointmentsList() {
-                try {
-                    const appointments = await authManager.getAppointments();
-                    const appointmentsContainer = document.querySelector('.appointments-list');
-                    
-                    if (appointmentsContainer) {
-                        if (appointments.length === 0) {
-                            appointmentsContainer.innerHTML = `
-                                <div class="text-center py-8">
-                                    <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                        <i class="fa-solid fa-calendar text-2xl text-text-secondary"></i>
-                                    </div>
-                                    <p class="text-text-secondary mb-4">Você não tem agendamentos marcados</p>
-                                </div>
-                            `;
-                        } else {
-                            appointmentsContainer.innerHTML = appointments.map(appointment => `
-                                <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
-                                    <div class="flex justify-between items-start">
-                                        <div>
-                                            <h3 class="font-semibold text-text-primary">${appointment.service}</h3>
-                                            <p class="text-text-secondary text-sm">${appointment.professional}</p>
-                                            <p class="text-text-secondary text-sm">${appointment.branch}</p>
-                                            <p class="text-text-secondary text-sm">${appointment.datetime}</p>
-                                        </div>
-                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                                            ${appointment.status}
-                                        </span>
-                                    </div>
-                                </div>
-                            `).join('');
-                        }
-                    }
-                } catch (error) {
-                    console.error('Erro ao carregar agendamentos:', error);
-                    const appointmentsContainer = document.querySelector('.appointments-list');
-                    if (appointmentsContainer) {
-                        appointmentsContainer.innerHTML = `
-                            <div class="text-center py-8">
-                                <div class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
-                                    <i class="fa-solid fa-exclamation-triangle text-2xl text-red-500"></i>
-                                </div>
-                                <p class="text-red-500 mb-4">Erro ao carregar agendamentos</p>
+            // Função para atualizar lista de agendamentos (agora com dados de exemplo)
+            function updateAppointmentsList() {
+                const appointmentsContainer = document.querySelector('.appointments-list');
+                
+                if (appointmentsContainer) {
+                    appointmentsContainer.innerHTML = `
+                        <div class="text-center py-8">
+                            <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <i class="fa-solid fa-calendar text-2xl text-text-secondary"></i>
                             </div>
-                        `;
-                    }
+                            <p class="text-text-secondary mb-4">Você não tem agendamentos marcados</p>
+                        </div>
+                    `;
                 }
             }
 
             // Atualizar lista de agendamentos ao carregar a página
-            await updateAppointmentsList();
+            updateAppointmentsList();
 
-            // Funcionalidade de logout
-            const logoutBtn = document.getElementById('logout-btn');
-            logoutBtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                try {
-                    await authManager.logout();
-                    alert('Logout realizado com sucesso!');
-                    window.location.href = 'landing-barbearia.html';
-                } catch (error) {
-                    console.error('Erro no logout:', error);
-                    // Limpar dados locais mesmo se houver erro
-                    authManager.clearTokens();
-                    authManager.setCurrentUser(null);
-                    window.location.href = 'landing-barbearia.html';
-                }
-            });
         });
     </script>
 
